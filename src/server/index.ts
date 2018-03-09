@@ -1,9 +1,12 @@
 import * as akala from '@akala/server';
 var log = akala.log('domojs:db');
 
-akala.injectWithName(['$master'], function (master: akala.worker.MasterRegistration)
+akala.injectWithName(['$master', '$isModule'], function (master: akala.worker.MasterRegistration, isModule:akala.worker.IsModule)
 {
-    master(module.filename, './master', './master');
+    if (isModule('@domojs/db'))
+        master(module.filename, './master', './master');
 })();
 
-export * from './master';
+import { DbClient } from './master';
+export * from './master'
+export var client: DbClient = akala.resolve<DbClient>('$db');

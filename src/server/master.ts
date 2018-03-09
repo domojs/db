@@ -13,6 +13,7 @@ export interface DbClient extends redis.RedisClient
     osort(key: string, columns: string[], sortKey: string, callback: redis.Callback<any[]>): void;
     osort(key: string, columns: string[], start: number, count: number, callback: redis.Callback<any[]>): void;
     osort(key: string, columns: string[], callback: redis.Callback<any[]>): void;
+    oget<T>(key: string, values: (keyof T)[], callback: redis.Callback<T>): void;
 }
 
 @di.factory("$db", '$settings', '$config')
@@ -32,8 +33,6 @@ class DbClientFactory implements di.IFactory<DbClient>
             settings('db.port', 6379);
         else if (!this.host)
             settings('db.host', 'localhost');
-
-
     }
 
 
@@ -57,7 +56,20 @@ class DbClientFactory implements di.IFactory<DbClient>
         db.on('error', function (error)
         {
             console.log(error);
-        })
+        });
+        db.oget = function <T>(key: string, fields: (keyof T)[], callback: redis.Callback<T>)
+        {
+            db.hmget(key, fields, function (err, result)
+            {
+                var o: Partial<T> = {};
+                di.each(fields, function (key, i)
+                {
+                    o[key] = result[i];
+                });
+                return o;
+            });
+        };
+
         db.osort = <any>function (key: string, columns: string[], sortKey: string, start: number, count: number, callback: redis.Callback<any[]>)
         {
 

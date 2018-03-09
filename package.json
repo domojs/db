@@ -6,11 +6,16 @@
     "url": "https://github.com/domojs/db/issues"
   },
   "devDependencies": {
-    "@types/redis": "^2.6.0"
+    "@types/redis": "^2.8.4",
+    "@types/ws": "^4.0.0"
   },
   "dependencies": {
-    "redis": "^2.8.0",
-    "@domojs/settings": "^1.0.0"
+    "ws": "^4.0.0",
+    "@akala/core": "^1.0.47",
+    "@akala/server": "^1.0.81",
+    "@domojs/settings": "^1.0.3",
+    "@types/request": "^2.0.12",
+    "redis": "^2.8.0"
   },
   "description": "",
   "homepage": "https://github.com/domojs/db#readme",
