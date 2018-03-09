@@ -1,0 +1,9 @@
+{
+    "compileOnSave": true,
+    "compilerOptions": {
+        "experimentalDecorators": true,
+        "declaration": true,
+        "moduleResolution": "node",
+        "module": "commonjs"
+    }
+}

@@ -9,11 +9,11 @@ export interface DbClient extends redis.RedisClient
     _persistent: boolean;
     another(): DbClient;
     on(event: string, handler: Function);
-    osort(key: string, columns: string[], sortKey: string, start: number, count: number, callback: redis.Callback<any[]>): void;
-    osort(key: string, columns: string[], sortKey: string, callback: redis.Callback<any[]>): void;
-    osort(key: string, columns: string[], start: number, count: number, callback: redis.Callback<any[]>): void;
-    osort(key: string, columns: string[], callback: redis.Callback<any[]>): void;
-    oget<T>(key: string, values: (keyof T)[], callback: redis.Callback<T>): void;
+    osort(key: string, columns: string[], sortKey: string, start: number, count: number, callback: redis.ResCallbackT<any[]>): void;
+    osort(key: string, columns: string[], sortKey: string, callback: redis.ResCallbackT<any[]>): void;
+    osort(key: string, columns: string[], start: number, count: number, callback: redis.ResCallbackT<any[]>): void;
+    osort(key: string, columns: string[], callback: redis.ResCallbackT<any[]>): void;
+    oget<T>(key: string, values: (keyof T)[], callback: redis.ResCallbackT<T>): void;
 }
 
 @di.factory("$db", '$settings', '$config')
@@ -57,7 +57,7 @@ class DbClientFactory implements di.IFactory<DbClient>
         {
             console.log(error);
         });
-        db.oget = function <T>(key: string, fields: (keyof T)[], callback: redis.Callback<T>)
+        db.oget = function <T>(key: string, fields: (keyof T)[], callback: redis.ResCallbackT<T>)
         {
             db.hmget(key, fields, function (err, result)
             {
@@ -70,7 +70,7 @@ class DbClientFactory implements di.IFactory<DbClient>
             });
         };
 
-        db.osort = <any>function (key: string, columns: string[], sortKey: string, start: number, count: number, callback: redis.Callback<any[]>)
+        db.osort = <any>function (key: string, columns: string[], sortKey: string, start: number, count: number, callback: redis.ResCallbackT<any[]>)
         {
 
             if (arguments.length < 5)
