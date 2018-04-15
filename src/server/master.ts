@@ -1,19 +1,19 @@
 import * as di from '@akala/server';
-import * as redis from 'redis';
+import * as redis from 'ioredis';
 import { Settings } from '@domojs/settings';
 import { EventEmitter } from 'events';
 var log = di.log('domojs:db');
 
-export interface DbClient extends redis.RedisClient
+export interface DbClient extends redis.Redis
 {
-    _persistent: boolean;
+    _persistent?: boolean;
     another(): DbClient;
     on(event: string, handler: Function);
-    osort(key: string, columns: string[], sortKey: string, start: number, count: number, callback: redis.Callback<any[]>): void;
-    osort(key: string, columns: string[], sortKey: string, callback: redis.Callback<any[]>): void;
-    osort(key: string, columns: string[], start: number, count: number, callback: redis.Callback<any[]>): void;
-    osort(key: string, columns: string[], callback: redis.Callback<any[]>): void;
-    oget<T>(key: string, values: (keyof T)[], callback: redis.Callback<T>): void;
+    osort(key: string, columns: string[], sortKey: string, start: number, count: number): Promise<any[]>;
+    osort(key: string, columns: string[], sortKey: string): Promise<any[]>;
+    osort(key: string, columns: string[], start: number, count: number): Promise<any[]>;
+    osort(key: string, columns: string[]): Promise<any[]>;
+    oget<T>(key: string, values: (keyof T)[]): Promise<T>;
 }
 
 @di.factory("$db", '$settings', '$config')
@@ -38,7 +38,7 @@ class DbClientFactory implements di.IFactory<DbClient>
 
     build(): DbClient
     {
-        var db = <DbClient><any>redis.createClient(Number(this.settings('db.port')), this.settings('db.host'), {});
+        var db = <any>new redis(Number(this.settings('db.port')), this.settings('db.host'), {}) as DbClient;
         var quit = db.quit.bind(db);
         var err = new Error();
         var timeOut = setTimeout(function ()
@@ -57,9 +57,9 @@ class DbClientFactory implements di.IFactory<DbClient>
         {
             console.log(error);
         });
-        db.oget = function <T>(key: string, fields: (keyof T)[], callback: redis.Callback<T>)
+        db.oget = function <T>(key: string, fields: (keyof T)[])
         {
-            db.hmget(key, fields, function (err, result)
+            return db.hmget.apply(db, (fields as string[]).splice(0, 0, key)).then(function (result)
             {
                 var o: Partial<T> = {};
                 di.each(fields, function (key, i)
@@ -70,9 +70,8 @@ class DbClientFactory implements di.IFactory<DbClient>
             });
         };
 
-        db.osort = <any>function (key: string, columns: string[], sortKey: string, start: number, count: number, callback: redis.Callback<any[]>)
+        db.osort = <any>function (key: string, columns: string[], sortKey: string, start: number, count: number)
         {
-
             if (arguments.length < 5)
             {
                 if (<any>sortKey instanceof Function)
@@ -82,15 +81,9 @@ class DbClientFactory implements di.IFactory<DbClient>
                 }
                 else if (!isNaN(<any>sortKey))
                 {
-                    callback = <any>count;
                     count = start;
                     start = <any>sortKey;
                     sortKey = null;
-                }
-                if (<any>start instanceof Function)
-                {
-                    callback = <any>start;
-                    start = count = null;
                 }
             }
             var args: any[] = [key];
@@ -130,11 +123,9 @@ class DbClientFactory implements di.IFactory<DbClient>
             if (direction !== false)
                 args.push(direction);
             log(args);
-            db.sort(args, function (error, replies)
+            return db.sort.apply(db, args).then((replies) =>
             {
                 var result = [];
-                if (error)
-                    return callback(error, null);
 
                 for (var i = 0; i < replies.length;)
                 {
@@ -145,7 +136,7 @@ class DbClientFactory implements di.IFactory<DbClient>
                     }
                     result.push(item);
                 }
-                callback(null, result);
+                return result;
             });
         };
 
