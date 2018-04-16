@@ -20,7 +20,7 @@
   "description": "",
   "homepage": "https://github.com/domojs/db#readme",
   "license": "MIT",
-  "main": "dist/server/index.js",
+  "main": "dist/index.js",
   "name": "@domojs/db",
   "repository": {
     "type": "git",
