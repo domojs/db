@@ -1,6 +1,5 @@
 import * as di from '@akala/server';
 import * as redis from 'ioredis';
-import { Settings } from '@domojs/settings';
 import { EventEmitter } from 'events';
 var log = di.log('domojs:db');
 
@@ -16,29 +15,26 @@ export interface DbClient extends redis.Redis
     oget<T>(key: string, values: (keyof T)[]): Promise<T>;
 }
 
-@di.factory("$db", '$settings', '$config')
+@di.factory("$db", '$config.@domojs/db')
 class DbClientFactory implements di.IFactory<DbClient>
 {
-    private port: number;
-    private host: string;
-    constructor(private settings: Settings, private config)
+    private port: number = 6379;
+    private host: string = 'localhost';
+
+    constructor(private config: PromiseLike<any>)
     {
-        log(settings);
         log(config);
-        this.port = settings('db.port') || config.port;
-        this.host = settings('db.host') || config.host;
-        if (!this.port && !this.host)
-            settings('db', { port: 6379, host: 'localhost' });
-        else if (!this.port)
-            settings('db.port', 6379);
-        else if (!this.host)
-            settings('db.host', 'localhost');
+        config.then((config) =>
+        {
+            this.port = config.port;
+            this.host = config.host;
+        });
     }
 
 
     build(): DbClient
     {
-        var db = <any>new redis(Number(this.settings('db.port')), this.settings('db.host'), {}) as DbClient;
+        var db = <any>new redis(Number(this.port), this.host, {}) as DbClient;
         var quit = db.quit.bind(db);
         var err = new Error();
         var timeOut = setTimeout(function ()
