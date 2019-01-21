@@ -48,10 +48,6 @@
     ws "^3.3.2"
     xml2js "^0.4.19"
 
-"@types/bluebird@*":
-  version "3.5.20"
-  resolved "https://registry.yarnpkg.com/@types/bluebird/-/bluebird-3.5.20.tgz#f6363172add6f4eabb8cada53ca9af2781e8d6a1"
-
 "@types/caseless@*":
   version "0.12.1"
   resolved "https://registry.yarnpkg.com/@types/caseless/-/caseless-0.12.1.tgz#9794c69c8385d0192acc471a540d1f8e0d16218a"
@@ -66,11 +62,10 @@
   dependencies:
     "@types/node" "*"
 
-"@types/ioredis@^3.2.7":
-  version "3.2.8"
-  resolved "https://registry.yarnpkg.com/@types/ioredis/-/ioredis-3.2.8.tgz#ea2dda6ee379efa5f8dabd477f04dce4bed91815"
+"@types/ioredis@^4.0.5":
+  version "4.0.5"
+  resolved "https://registry.yarnpkg.com/@types/ioredis/-/ioredis-4.0.5.tgz#248b2a9852de229d9e89ec757cd03dc39b884e21"
   dependencies:
-    "@types/bluebird" "*"
     "@types/node" "*"
 
 "@types/node@*":
