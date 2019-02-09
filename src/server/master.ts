@@ -1,6 +1,5 @@
 import * as di from '@akala/server';
 import * as redis from 'ioredis';
-import { EventEmitter } from 'events';
 var log = di.log('domojs:db');
 
 export interface DbClient extends redis.Redis
