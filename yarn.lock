@@ -3,9 +3,9 @@
 
 
 "@akala/core@^2.0.65", "@akala/core@^2.0.66":
-  version "2.0.66"
-  resolved "https://registry.yarnpkg.com/@akala/core/-/core-2.0.66.tgz#f3b3fa07de2ced7d40fd1a19f02d01885c1b25ad"
-  integrity sha512-mwtZJdOpmDuK3cAR0uddNOOm8ai5rerAh8phwd4KJUx2K4XjNeDiZm4LQCzNW5tXC9VEJaGJDKKAZ7H1vNzOIg==
+  version "2.0.69"
+  resolved "https://registry.yarnpkg.com/@akala/core/-/core-2.0.69.tgz#7e5d48eb2c0a42c2c686468b86563c77134d1e14"
+  integrity sha512-rVu7Vli2F9tBAyrQg9z1/lVaqNS8wWWKPhPpSGnDS/CSGUNrib3iqnQN1VjX1XJoIfyKboIphyoLJpIAbjwT5A==
   dependencies:
     "@akala/json-rpc-ws" "^7.0.1"
     array-flatten "^2.1.1"
