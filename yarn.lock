@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@akala/core@^2.0.65", "@akala/core@^2.0.66":
-  version "2.0.66"
-  resolved "https://registry.yarnpkg.com/@akala/core/-/core-2.0.66.tgz#f3b3fa07de2ced7d40fd1a19f02d01885c1b25ad"
-  integrity sha512-mwtZJdOpmDuK3cAR0uddNOOm8ai5rerAh8phwd4KJUx2K4XjNeDiZm4LQCzNW5tXC9VEJaGJDKKAZ7H1vNzOIg==
+"@akala/core@^2.0.65", "@akala/core@^2.0.69":
+  version "2.0.69"
+  resolved "https://registry.yarnpkg.com/@akala/core/-/core-2.0.69.tgz#7e5d48eb2c0a42c2c686468b86563c77134d1e14"
+  integrity sha512-rVu7Vli2F9tBAyrQg9z1/lVaqNS8wWWKPhPpSGnDS/CSGUNrib3iqnQN1VjX1XJoIfyKboIphyoLJpIAbjwT5A==
   dependencies:
     "@akala/json-rpc-ws" "^7.0.1"
     array-flatten "^2.1.1"
@@ -31,11 +31,11 @@
     ws "^6.0.0"
 
 "@akala/server@^2.1.12":
-  version "2.1.15"
-  resolved "https://registry.yarnpkg.com/@akala/server/-/server-2.1.15.tgz#5047f6cc84731fd939e2710cece4dff9e868e808"
-  integrity sha512-QOIN0Pic50r7IgQFiX5KqBRG+8xll+7895h3vLozaFbwZbOjvrGiH13qiyBbQqpR1XQHe5MIRrmsQIK06PhjaQ==
+  version "2.1.16"
+  resolved "https://registry.yarnpkg.com/@akala/server/-/server-2.1.16.tgz#f2f6c0d31404bbe3a14808c267afbccf898d06e3"
+  integrity sha512-C1bu3P2m9Nx2eKQ1FpczIesnsut+Y9Kve/YpHKekK9g0Ft8FxYTbq/ZdC86zzV3lLWqtl7z16yIhAiKPdCEOPQ==
   dependencies:
-    "@akala/core" "^2.0.66"
+    "@akala/core" "^2.0.69"
     "@akala/json-rpc-ws" "^7.0.0"
     body-parser "^1.18.2"
     express "^4.16.2"
@@ -46,7 +46,7 @@
     sequencify "0.0.7"
     source-map-support "^0.5.9"
     underscore "^1.8.3"
-    ws "^6.1.2"
+    ws "^6.1.4"
     xml2js "^0.4.19"
 
 "@types/caseless@*":
@@ -732,7 +732,7 @@ wrappy@1:
   resolved "https://registry.yarnpkg.com/wrappy/-/wrappy-1.0.2.tgz#b5243d8f3ec1aa35f1364605bc0d1036e30ab69f"
   integrity sha1-tSQ9jz7BqjXxNkYFvA0QNuMKtp8=
 
-ws@^6.0.0, ws@^6.1.2, ws@^6.1.3:
+ws@^6.0.0, ws@^6.1.3, ws@^6.1.4:
   version "6.1.4"
   resolved "https://registry.yarnpkg.com/ws/-/ws-6.1.4.tgz#5b5c8800afab925e94ccb29d153c8d02c1776ef9"
   integrity sha512-eqZfL+NE/YQc1/ZynhojeV8q+H050oR8AZ2uIev7RU10svA9ZnJUddHcOUZTJLinZ9yEfdA2kSATS2qZK5fhJA==
