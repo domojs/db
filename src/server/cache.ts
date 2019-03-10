@@ -1,4 +1,9 @@
 import * as akala from '@akala/core'
+import * as common from './common'
+
+export interface Repository<TObject, TKey> extends common.Repository<TObject, TKey>
+{
+}
 
 export interface Cache
 {
@@ -8,9 +13,6 @@ export interface Cache
 
 class CacheProxy implements Cache
 {
-    /**
-     *
-     */
     constructor(private name: string)
     {
     }

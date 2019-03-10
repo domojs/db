@@ -3,6 +3,7 @@
     "compilerOptions": {
         "rootDir": ".",
         "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
         "sourceMap": true,
         "target": "es6",
         "moduleResolution": "node",

@@ -16,9 +16,15 @@
     "license": "MIT",
     "types": "dist/server/index.d.ts",
     "dependencies": {
-        "sequelize": "^4.41.0"
+        "@akala/core": "^2.0.73",
+        "@akala/server": "^2.1.17",
+        "mongodb": "^3.1.13",
+        "reflect-metadata": "^0.1.13",
+        "sequelize": "^4.43.0"
     },
     "devDependencies": {
-        "@types/sequelize": "^4.27.29"
+        "@types/debug": "^4.1.2",
+        "@types/mongodb": "^3.1.20",
+        "@types/sequelize": "^4.27.39"
     }
 }
