@@ -1,16 +1,22 @@
 import * as akala from '@akala/core'
 import '@akala/test'
-import { main as cache, Repository as Cache } from './cache';
+import { Repository as Cache } from './cache';
 import { main as rdb, Repository as Sql } from './rdb';
 import { main as doc, Repository as NoSql } from './doc'
 import "reflect-metadata";
 import { FieldType, StorageFieldType, ModelDefinition, Relationship, Attribute, StorageField, StorageView, Generator } from './common';
+import { Query } from './Query';
 
 export { Cardinality } from './cardinality'
-export { cache, rdb, doc, ModelDefinition, Relationship, Attribute, StorageField, StorageView, Generator };
-export { IPersistenceEngine } from './PersistenceEngine'
+export { rdb, doc, ModelDefinition, Relationship, Attribute, StorageField, StorageView, Generator };
+export { PersistenceEngine } from './PersistenceEngine'
 
 var module = akala.module('db');
+
+export interface Store
+{
+    [key:string]:Query<any>
+}
 
 export class RepositoryFactory<T extends Sql<any, any> | Cache<any, any> | NoSql<any, any>>
 {

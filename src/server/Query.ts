@@ -65,21 +65,23 @@ export class Query<T>
         return new Query<T>(this.provider, Expression.applySymbol(this.expression, QuerySymbols.groupby, fieldOrExpression as TypedLambdaExpression<Project<T, X>>));
     }
 
-    public join<U, FT extends keyof T, FU extends keyof U, X>(other: Query<U>, fieldT: FT, fieldU: FU, selector: { first: keyof X, second: keyof X }): Query<X>
+    public join<U, X>(other: Query<U>, fieldT: keyof T, fieldU: keyof U, selector: { first: keyof X, second: keyof X }): Query<X>
     {
         // if (typeof fieldOrExpression == 'string')
         // {
         var parameterT = Expression.parameter<T>()
         var parameterU = Expression.parameter<U>()
-        var fieldOrExpression = Expression.lambda<Project2<T, U, X>>(
-            Expression.new<X>(
-                Expression.member<X, typeof selector.first>(Expression.member(parameterT, fieldT), selector.first),
-                Expression.member<X, typeof selector.second>(Expression.member(parameterU, fieldU), selector.second)),
+        var joinCondition = Expression.lambda<Project2<T, U, X>>(
+            Expression.binary<Expressions>(
+                Expression.new<X>(
+                    Expression.member<X, typeof selector.first>(Expression.member(parameterT, fieldT), selector.first),
+                    Expression.member<X, typeof selector.second>(Expression.member(parameterU, fieldU), selector.second)),
+                BinaryOperator.Unknown, other.expression) as any,
             [parameterT, parameterU]);
         // }
         // if (typeof fieldOrExpression == 'symbol' || typeof fieldOrExpression == 'number')
         //     throw new Error('Invalid type of field');
-        return new Query<X>(this.provider, Expression.applySymbol(this.expression, QuerySymbols.join, fieldOrExpression as TypedLambdaExpression<Project<T, X>>));
+        return new Query<X>(this.provider, Expression.applySymbol(this.expression, QuerySymbols.join, joinCondition as TypedLambdaExpression<Project<T, X>>));
     }
 
     public select<F extends keyof T>(field: F): ApplySymbolExpression<T, T[F]>
@@ -100,7 +102,7 @@ export class Query<T>
     {
         if (expression)
             return this.where(expression).any();
-        return this.provider.Execute<boolean>(Expression.applySymbol<T>(this.expression, QuerySymbols.any));
+        return this.provider.execute<boolean>(Expression.applySymbol<T>(this.expression, QuerySymbols.any));
     }
 }
 
@@ -112,7 +114,7 @@ export interface IQueryable<T>
 
 export interface IQueryableProvider
 {
-    Execute<TResult>(expression: Expressions): PromiseLike<TResult[]>;
+    execute<TResult>(expression: Expressions): PromiseLike<TResult[]>;
 }
 
 export var QuerySymbols = {

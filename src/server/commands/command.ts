@@ -1,9 +1,20 @@
-import { InsertCommand as Insert } from "./insert-command";
+import { CreateCommand as Create } from "./create-command";
 import { UpdateCommand as Update } from "./update-command";
 import { DeleteCommand as Delete } from "./delete-command";
-export { Insert, Update, Delete }
+export { Create, Update, Delete }
 
-export type Commands<T> = Insert<T> | Update<T> | Delete<T>;
+export enum CommandType
+{
+    Create,
+    Update,
+    Delete,
+    CreateRelationship,
+    DeleteRelationship
+}
+
+export type Commands<T> = Create<T> | Update<T> | Delete<T>;
+
+
 
 export interface CommandResult
 {
