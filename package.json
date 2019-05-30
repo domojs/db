@@ -27,6 +27,7 @@
         "@types/mocha": "^5.2.6",
         "@types/mongodb": "^3.1.20",
         "@types/sequelize": "^4.27.39",
-        "mocha": "^6.1.4"
+        "mocha": "^6.1.4",
+        "mock-require": "^3.0.3"
     }
 }

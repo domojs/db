@@ -1,4 +1,4 @@
-import { Expressions, TypedExpression, Expression, IEnumerable, StrictExpressions, StrictTypedExpression } from "./expression";
+import { Expressions, TypedExpression, Expression, IEnumerable, StrictExpressions, StrictTypedExpression, UnknownExpression } from "./expression";
 import { ExpressionType } from "./expression-type";
 import { BinaryExpression } from "./binary-expression";
 import { UnaryExpression } from "./unary-expression";
@@ -16,25 +16,25 @@ export type EqualityComparer<T> = (a: T, b: T) => boolean;
 
 export class ExpressionVisitor
 {
-    public visit<T>(expression: StrictTypedExpression<T>): StrictTypedExpression<T>
-    public visit<T>(expression: TypedExpression<T>): TypedExpression<T>
-    public visit(expression: StrictExpressions): StrictExpressions
-    public visit(expression: IVisitable<this, any>): Expressions
-    public visit(expression: IVisitable<this, any>): Expressions
+    public visit<T>(expression: StrictTypedExpression<T>): Promise<StrictTypedExpression<T>>
+    public visit<T>(expression: TypedExpression<T>): Promise<TypedExpression<T>>
+    public visit(expression: StrictExpressions): Promise<StrictExpressions>
+    public visit(expression: IVisitable<this, Promise<any>>): Promise<Expressions>
+    public visit(expression: IVisitable<this, Promise<any>>): Promise<Expressions>
     {
         return expression.accept(this);
     }
 
-    visitUnknown(expression: { type: ExpressionType.Unknown, accept(visitor: ExpressionVisitor): any }): Expressions
+    visitUnknown(expression: UnknownExpression)
     {
         if (expression.accept)
             return expression.accept(this);
         throw new Error("unsupported type");
     }
 
-    visitNew<T>(expression: NewExpression<T>): Expressions
+    async visitNew<T>(expression: NewExpression<T>): Promise<Expressions>
     {
-        var members = this.visitArray(expression.init);
+        var members = await this.visitArray(expression.init);
         if (members !== expression.init)
         {
             return new NewExpression<T>(...members);
@@ -42,10 +42,10 @@ export class ExpressionVisitor
         return expression;
     }
 
-    visitApplySymbol<T, U>(arg0: ApplySymbolExpression<T, U>): Expressions
+    async visitApplySymbol<T, U>(arg0: ApplySymbolExpression<T, U>): Promise<Expressions>
     {
-        var source = this.visit(arg0.source);
-        var arg = this.visit(arg0.argument);
+        var source = await this.visit(arg0.source);
+        var arg = await this.visit(arg0.argument);
         if (source !== arg0.source || arg !== arg0.argument)
         {
             if (!this.isTypedExpression(source))
@@ -54,10 +54,10 @@ export class ExpressionVisitor
         }
         return arg0;
     }
-    visitCall<T, TMethod extends keyof T>(arg0: CallExpression<T, TMethod>): Expressions
+    async visitCall<T, TMethod extends keyof T>(arg0: CallExpression<T, TMethod>): Promise<Expressions>
     {
-        var source = this.visit(arg0.source);
-        var args = this.visitArray(arg0.arguments) as StrictExpressions[];
+        var source = await this.visit(arg0.source);
+        var args = (await this.visitArray(arg0.arguments)) as StrictExpressions[];
         if (source !== arg0.source || args !== arg0.arguments)
         {
             if (!this.isTypedExpression(source))
@@ -66,9 +66,9 @@ export class ExpressionVisitor
         }
         return arg0;
     }
-    visitMember<T, TMember extends keyof T>(arg0: MemberExpression<T, TMember, T[TMember]>): Expressions
+    async visitMember<T, TMember extends keyof T>(arg0: MemberExpression<T, TMember, T[TMember]>): Promise<Expressions>
     {
-        var source = this.visit(arg0.source);
+        var source = await this.visit(arg0.source);
         if (source !== arg0.source)
         {
             if (!this.isTypedExpression(source))
@@ -87,10 +87,10 @@ export class ExpressionVisitor
             source.type == ExpressionType.ApplySymbolExpression ||
             source.type == ExpressionType.NewExpression);
     }
-    visitLambda<T extends (...args: any[]) => any>(arg0: TypedLambdaExpression<T>): Expressions
+    async visitLambda<T extends (...args: any[]) => any>(arg0: TypedLambdaExpression<T>): Promise<Expressions>
     {
-        var parameters: Parameter<T> = this.visitArray(arg0.parameters) as any;
-        var body = this.visit(arg0.body);
+        var parameters: Parameter<T> = await this.visitArray(arg0.parameters) as any;
+        var body = await this.visit(arg0.body);
         if (body !== arg0.body || parameters !== arg0.parameters)
             return new TypedLambdaExpression<T>(body, arg0.parameters);
         return arg0;
@@ -101,14 +101,14 @@ export class ExpressionVisitor
         return a === b;
     }
 
-    visitEnumerable<T>(map: IEnumerable<T>, addToNew: (item: T) => void, visitSingle: (item: T) => T, compare?: EqualityComparer<T>): void
+    async visitEnumerable<T>(map: IEnumerable<T>, addToNew: (item: T) => void, visitSingle: (item: T) => PromiseLike<T>, compare?: EqualityComparer<T>): Promise<void>
     {
         if (!compare)
             compare = ExpressionVisitor.defaultComparer;
         var tmp: T[] = [];
         for (var set of map)
         {
-            var newSet = visitSingle(set)
+            var newSet = await visitSingle.call(this, set)
             if (compare(newSet, set))
                 tmp.forEach(addToNew);
             else
@@ -116,10 +116,10 @@ export class ExpressionVisitor
         }
     }
 
-    visitArray<T extends IVisitable<this, T>>(parameters: T[]): T[]
+    async visitArray<T extends IVisitable<ExpressionVisitor, Promise<T>>>(parameters: T[]): Promise<T[]>
     {
         var result: T[] = null;
-        this.visitEnumerable(parameters, function (set)
+        await this.visitEnumerable(parameters, function (set)
         {
             if (!result)
                 result = new Array<T>(parameters.length);
@@ -127,25 +127,25 @@ export class ExpressionVisitor
         }, this.visit);
         return result || parameters;
     }
-    visitConstant(arg0: ConstantExpression<any>): Expressions
+    async visitConstant(arg0: ConstantExpression<any>): Promise<Expressions>
     {
         return arg0;
     }
-    visitParameter(arg0: ParameterExpression<any>): Expressions
+    async visitParameter(arg0: ParameterExpression<any>): Promise<Expressions>
     {
         return arg0;
     }
-    visitUnary(arg0: UnaryExpression): Expressions
+    async visitUnary(arg0: UnaryExpression): Promise<Expressions>
     {
-        var operand = this.visit(arg0.operand);
+        var operand = await this.visit(arg0.operand);
         if (operand !== arg0.operand)
             return new UnaryExpression(operand, arg0.operator);
         return arg0;
     }
-    visitBinary<T extends Expressions = StrictExpressions>(expression: BinaryExpression<T>): BinaryExpression<Expressions>
+    async visitBinary<T extends Expressions = StrictExpressions>(expression: BinaryExpression<T>): Promise<BinaryExpression<Expressions>>
     {
-        var left = this.visit(expression.left);
-        var right = this.visit(expression.right);
+        var left = await this.visit(expression.left);
+        var right = await this.visit(expression.right);
 
         if (left !== expression.left || right !== expression.right)
             return new BinaryExpression<Expressions>(left, expression.operator, right);

@@ -8,7 +8,7 @@ export class PersistenceEngineQueryProvider implements IQueryableProvider
     {
     }
 
-    execute<TResult>(expression: Expressions): PromiseLike<TResult[]>
+    execute<TResult>(expression: Expressions): PromiseLike<TResult>
     {
         return this.engine.load<TResult>(expression);
     }

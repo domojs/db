@@ -1,8 +1,7 @@
 import { ExpressionType } from "./expression-type";
-import { Parameter, TypedLambdaExpression, LambdaExpression } from "./lambda-expression";
+import { Parameter, TypedLambdaExpression } from "./lambda-expression";
 import { BinaryExpression } from "./binary-expression";
 import { BinaryOperator } from "./binary-operator";
-import { Binary } from "bson";
 import { UnaryOperator } from "./unary-operator";
 import { UnaryExpression } from "./unary-expression";
 import { MemberExpression } from "./member-expression";
@@ -13,7 +12,7 @@ import { ApplySymbolExpression } from "./apply-symbol-expression";
 import { NewExpression } from "./new-expression";
 import { ExpressionVisitor } from "./expression-visitor";
 
-export type UnknownExpression = { type: ExpressionType.Unknown, accept(visitor: ExpressionVisitor): Expressions };
+export type UnknownExpression = { type: ExpressionType.Unknown, accept(visitor: ExpressionVisitor): Promise<Expressions> };
 
 export type StrictTypedExpression<T> = ConstantExpression<T> | ParameterExpression<T> | MemberExpression<any, any, T> | ApplySymbolExpression<any, T> | NewExpression<T>;
 export type TypedExpression<T> = StrictTypedExpression<T> | UnknownExpression;
@@ -22,17 +21,18 @@ export type Predicate<T> = (a: T) => boolean;
 export type Project<T, U> = (a: T) => U;
 export type Project2<T, U, V> = (a: T, b: U) => V;
 
-export interface IEnumerable<T>
-{
-    [Symbol.iterator](): IterableIterator<T>;
-}
+export type PredicateAsync<T> = (a: T) => PromiseLike<boolean>;
+export type ProjectAsync<T, U> = (a: T) => PromiseLike<U>;
+export type Project2Async<T, U, V> = (a: T, b: U) => PromiseLike<V>;
+
+export type IEnumerable<T> = Iterable<T>;
 
 export abstract class Expression
 {
     abstract get type(): ExpressionType;
-    abstract accept(visitor: ExpressionVisitor): Expressions;
+    abstract accept(visitor: ExpressionVisitor): Promise<Expressions>;
 
-    public static lambda<T extends (...args: any[]) => any>(body: StrictExpressions, parameters: Parameter<T> & StrictExpressions[])
+    /*public static lambda<T extends (...args: any[]) => any>(body: StrictExpressions, parameters: Parameter<T> & StrictExpressions[])
     {
         return new TypedLambdaExpression<T>(body, parameters);
     }
@@ -102,7 +102,7 @@ export abstract class Expression
     public static applySymbol<T, U>(source: TypedExpression<T>, symbol: symbol, arg?: TypedLambdaExpression<Project<T, U>> | TypedLambdaExpression<Predicate<T>> | Exclude<TypedExpression<U>, UnknownExpression>)
     {
         return new ApplySymbolExpression<T, U>(source, symbol, arg);
-    }
+    }*/
 }
 
 export type StrictExpressions = ApplySymbolExpression<any, any> |
@@ -115,5 +115,4 @@ export type StrictExpressions = ApplySymbolExpression<any, any> |
     ConstantExpression<any> |
     NewExpression<any>;
 
-export type Expressions = StrictExpressions |
-{ type: ExpressionType.Unknown, accept(visitor: ExpressionVisitor): Expressions };
+export type Expressions = StrictExpressions | UnknownExpression;

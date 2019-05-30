@@ -1,9 +1,11 @@
 import * as db from '../server'
 import 'reflect-metadata'
 
-@db.Model('ModelTest1')
+@db.Model
 export class ModelTest1
 {
+    constructor() { }
+
     @db.Key(db.Types.string)
     public s1: string;
 
@@ -19,6 +21,6 @@ export class ModelTest1
     }
 
     @db.Field
-    public d:Date;
+    public d: Date;
 }
 

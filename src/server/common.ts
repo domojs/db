@@ -1,6 +1,11 @@
-import { Repository } from "./shared";
+import { Repository, DbSet } from "./shared";
 import { Cardinality } from "./cardinality";
-import { Expressions } from "./expressions/expression";
+import { Expressions, Expression } from "./expressions/expression";
+import { PersistenceEngine } from "./PersistenceEngine";
+import { Query } from "./Query";
+import { PersistenceEngineQueryProvider } from "./PersistenceQueryProvider";
+import { Update, Delete, Create } from "./commands/command";
+import { ConstantExpression } from "./expressions/constant-expression";
 
 export enum StorageType
 {
@@ -93,10 +98,42 @@ export class StorageView<U extends { [key: string]: any }>
 export class ModelDefinition<TObject extends { [key: string]: any }>
 {
     static definitions: { [key: string]: ModelDefinition<any> } = {};
+    prototype: TObject;
     static get definitionsAsArray() { return Object.keys(this.definitions).map((name) => this.definitions[name]); }
-    constructor(public readonly name: string, public nameInStorage: string, public namespace: string)
+    constructor(public name: string, public nameInStorage: string, public namespace: string)
     {
-        ModelDefinition.definitions[name] = this;
+        if (name)
+            ModelDefinition.definitions[name] = this;
+        if (!nameInStorage)
+            this.nameInStorage = name;
+    }
+
+    public dbSet(engine: PersistenceEngine): DbSet<TObject>
+    {
+        var model = this;
+        return Object.assign(new Query<TObject>(new PersistenceEngineQueryProvider(engine), new ConstantExpression(this)), {
+            model, update(record: TObject)
+            {
+                return new Update(record, model);
+            }, delete(record: TObject)
+            {
+                return new Delete(record, model);
+            }, create(record: TObject)
+            {
+                return new Create(record, model);
+            },
+        });
+    }
+
+    fromJson(data: any)
+    {
+        if (typeof data == 'string')
+            data = JSON.parse(data);
+        if (typeof data != 'object')
+            throw new Error(`${data} cannot be read as model ${this.namespace}.${this.name}`)
+        if (this.prototype)
+            Object.setPrototypeOf(data, this.prototype);
+        return data;
     }
 
     private storageView: StorageView<TObject>;
@@ -132,7 +169,7 @@ export class ModelDefinition<TObject extends { [key: string]: any }>
 
     public defineMember<TKey extends Extract<keyof TObject, string>>(name: TKey, isKey: boolean, type: FieldType)
     {
-        this.members[name] = Object.assign({ name, isKey, mode: ModelMode.Attribute }, type) as any;
+        this.members[name] = Object.assign({ name, nameInStorage: name, isKey, mode: ModelMode.Attribute }, type) as any;
         return this;
     }
 

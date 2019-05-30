@@ -1,4 +1,4 @@
-import { Expression, Expressions } from "./expression";
+import { Expression, Expressions, TypedExpression } from "./expression";
 import { ExpressionType } from "./expression-type";
 import { ParameterExpression } from "./parameter-expression";
 import { ExpressionVisitor } from "./expression-visitor";
@@ -40,6 +40,10 @@ export type Parameter<T extends (...args: any[]) => any> = T extends () => any ?
 
 export class LambdaExpression extends TypedLambdaExpression<(...args: any[]) => any>
 {
+    static typed<T extends (...args: any[]) => any>(body: TypedExpression<T>, parameters: Parameter<T> & Expressions[]): any
+    {
+        return new TypedLambdaExpression<T>(body, parameters);
+    }
     constructor(public readonly body: Expressions, ...parameters: ParameterExpression<any>[])
     {
         super(body, parameters as any);

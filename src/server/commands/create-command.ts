@@ -1,9 +1,10 @@
 import { CommandProcessor } from "./command-processor";
 import { CommandType } from "./command";
+import { ModelDefinition } from "../shared";
 
 export class CreateCommand<T>
 {
-    constructor(public readonly record: T)
+    constructor(public readonly record: T, public readonly model: ModelDefinition<T>)
     {
     }
 
