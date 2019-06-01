@@ -8,18 +8,31 @@ import { CommandResult, Commands, Create } from "../commands/command";
 import { ModelDefinition } from "../shared";
 import { promisify } from "util";
 import { ConstantExpression } from "../expressions/constant-expression";
-debugger;
-export class File extends PersistenceEngine
+
+export class File extends PersistenceEngine<FileOptions>
 {
-    constructor(private store: FileSystemFolder & FileSystemContainer, options: FileOptions = {})
+    private store: FileSystemFolder & FileSystemContainer;
+
+    constructor()
     {
-        super(new FileCommandProcessor(store, options));
+        super(new FileCommandProcessor());
+    }
+
+    public async init(options?)
+    {
+        if (!options)
+            options = { path: process.cwd(), rootDbName: '.' };
+        if (!options.store)
+            options.store = await new FolderEntry(options.path, options.rootDbName, undefined);
+        this.store = options.store;
+        this.processor.init(options);
     }
 
     public static async from(path: string, rootDbName: string = '.')
     {
-        var store = new FolderEntry(path, rootDbName, undefined);
-        return new File(store as unknown as FileSystemFolder & FileSystemContainer);
+        var engine = new File();
+        await engine.init({ path, rootDbName });
+        return engine;
     }
 
     public async load<T>(expression: StrictExpressions): Promise<T>
@@ -73,14 +86,26 @@ export class File extends PersistenceEngine
 
 interface FileOptions
 {
+    path?: string;
+    rootDbName?: string;
+    store?: FileSystemFolder & FileSystemContainer;
     multipleKeySeparator?: string
 }
 
-class FileCommandProcessor extends CommandProcessor
+class FileCommandProcessor extends CommandProcessor<FileOptions>
 {
-    constructor(private store: FileSystemFolder & FileSystemContainer, private engineOptions: FileOptions)
+    constructor()
     {
         super();
+    }
+
+    private store: FileSystemFolder & FileSystemContainer;
+    private engineOptions: FileOptions;
+
+    public init(options: FileOptions)
+    {
+        this.store = options.store;
+        this.engineOptions = options;
     }
 
     private async getFileName<T>(record: T, model: ModelDefinition<T>)

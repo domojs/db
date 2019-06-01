@@ -1,8 +1,6 @@
 import { ExpressionType } from "./expression-type";
-import { Parameter, TypedLambdaExpression } from "./lambda-expression";
+import { TypedLambdaExpression } from "./lambda-expression";
 import { BinaryExpression } from "./binary-expression";
-import { BinaryOperator } from "./binary-operator";
-import { UnaryOperator } from "./unary-operator";
 import { UnaryExpression } from "./unary-expression";
 import { MemberExpression } from "./member-expression";
 import { ConstantExpression } from "./constant-expression";

@@ -26,12 +26,13 @@ export class Transaction
     }
 }
 
-export abstract class PersistenceEngine
+export abstract class PersistenceEngine<TOptions = string>
 {
-    constructor(private processor: CommandProcessor)
+    constructor(protected processor: CommandProcessor<TOptions>)
     {
-
     }
+
+    public abstract init(connection: TOptions): Promise<void>;
 
     public abstract load<T>(expression: Expressions): PromiseLike<T>;
 

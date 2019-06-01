@@ -1,4 +1,4 @@
-import { Repository, DbSet } from "./shared";
+import { DbSet } from "./shared";
 import { Cardinality } from "./cardinality";
 import { Expressions, Expression } from "./expressions/expression";
 import { PersistenceEngine } from "./PersistenceEngine";
@@ -108,7 +108,7 @@ export class ModelDefinition<TObject extends { [key: string]: any }>
             this.nameInStorage = name;
     }
 
-    public dbSet(engine: PersistenceEngine): DbSet<TObject>
+    public dbSet(engine: PersistenceEngine<any>): DbSet<TObject>
     {
         var model = this;
         return Object.assign(new Query<TObject>(new PersistenceEngineQueryProvider(engine), new ConstantExpression(this)), {
@@ -122,6 +122,26 @@ export class ModelDefinition<TObject extends { [key: string]: any }>
             {
                 return new Create(record, model);
             },
+            async updateSingle(this: DbSet<TObject>, record: TObject)
+            {
+                engine.beginTransaction();
+                engine.addCommand(this.update(record));
+                var result = await engine.commitTransaction();
+                return result[0];
+            }, async deleteSingle(record: TObject)
+            {
+                engine.beginTransaction();
+                engine.addCommand(this.delete(record));
+                var result = await engine.commitTransaction();
+                return result[0]
+            }, async createSingle(record: TObject)
+            {
+                engine.beginTransaction();
+                engine.addCommand(this.create(record));
+                var result = await engine.commitTransaction();
+                return result[0]
+            },
+
         });
     }
 

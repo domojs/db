@@ -21,6 +21,15 @@ export * from './commands/command'
 export * from './Query'
 export * from './exceptions'
 export * from './string-builder'
+export * from './providers/file'
+export * from './providers/vanilla'
+
+import {providers} from './shared'
+import { File } from './providers/file';
+import { Vanilla } from './providers/vanilla';
+
+providers.register('file', File)
+providers.register('vanilla', Vanilla)
 
 akala.injectWithName(['$isModule', '$master', '$worker'], function (isModule: akala.worker.IsModule, master: akala.worker.MasterRegistration, worker: EventEmitter)
 {

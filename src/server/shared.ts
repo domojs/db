@@ -1,21 +1,18 @@
 import * as akala from '@akala/core'
-import { Repository as Cache } from './cache';
-import { main as rdb, Repository as Sql } from './rdb';
-import { main as doc, Repository as NoSql } from './doc'
 import "reflect-metadata";
 import { FieldType, StorageFieldType, ModelDefinition, Relationship, Attribute, StorageField, StorageView, Generator } from './common';
 import { Query } from './Query';
 import { Predicate, Project, PredicateAsync } from './expressions/expression';
 import { NotSupportedException } from './exceptions';
 import { PersistenceEngine } from './PersistenceEngine';
-import { Update, Create, Delete } from './commands/command';
+import { Update, Create, Delete, CommandResult } from './commands/command';
 import { isDate } from 'util';
 
 export { Cardinality } from './cardinality'
-export { rdb, doc, ModelDefinition, Relationship, Attribute, StorageField, StorageView, Generator };
+export { ModelDefinition, Relationship, Attribute, StorageField, StorageView, Generator };
 export { PersistenceEngine } from './PersistenceEngine'
 
-var module = akala.module('db');
+export var providers = akala.module('db')
 
 export interface DbSet<T> extends Query<T>
 {
@@ -23,6 +20,9 @@ export interface DbSet<T> extends Query<T>
     update(record: T): Update<T>;
     delete(record: T): Delete<T>;
     create(record: T): Create<T>;
+    updateSingle(record: T): PromiseLike<CommandResult>;
+    deleteSingle(record: T): PromiseLike<CommandResult>;
+    createSingle(record: T): PromiseLike<CommandResult>;
 }
 
 export interface StoreDefinition
@@ -32,7 +32,7 @@ export interface StoreDefinition
 
 export class Store<TStore extends StoreDefinition>
 {
-    public static create<TStore extends StoreDefinition>(engine: PersistenceEngine, ...names: (keyof TStore)[])
+    public static create<TStore extends StoreDefinition>(engine: PersistenceEngine<any>, ...names: (keyof TStore)[])
     {
         return new Store<TStore>(engine, ...names) as unknown as TStore;
     }
@@ -153,54 +153,6 @@ export namespace Enumerable
             }
         }
     }
-}
-
-export class RepositoryFactory<T extends Sql<any, any> | Cache<any, any> | NoSql<any, any>>
-{
-    repositories: akala.Injector;
-    providers: akala.Injector;
-    constructor(type: string)
-    {
-        this.repositories = new akala.Injector(module);
-        this.providers = new akala.Injector(module);
-        module.register(type, this);
-    }
-
-    create(provider: string): T
-    create(provider: string, configuration: any): T
-    create(provider: string, alias: string): T
-    create(provider: string, configuration?: any, alias?: string): T
-    {
-        if (typeof configuration == 'undefined')
-            return this.repositories.resolve<T>('default');
-        if (typeof configuration == 'string')
-            return this.repositories.resolve<T>(configuration);
-        var result = this.providers.resolve<T>(provider);
-        result.init(configuration);
-        if (typeof alias != 'undefined')
-            this.repositories.register(alias, result);
-        return result;
-    }
-
-    register(provider: string, factory: () => T)
-    {
-        this.providers.registerFactory(provider, factory);
-    }
-
-    Provider(provider: string)
-    {
-        return (factory: new () => T) =>
-        {
-            this.register(provider, () => { return new factory() });
-        }
-    }
-}
-
-
-export var Repository = {
-    cache: new RepositoryFactory('cache'),
-    sql: new RepositoryFactory('sql'),
-    nosql: new RepositoryFactory('nosql'),
 }
 
 export function Model<TObject>(name: string | (new () => TObject), nameInStorage?: string, namespace?: string)
@@ -327,10 +279,7 @@ function member(isKey: boolean, type?: FieldType | (() => FieldType))
                     set(value);
                 }
             }
-
-
             else
-
                 throw new Error(`field '${propertyKey}' type on ${target.name} could not be inferred`);
         }
     }
@@ -339,6 +288,6 @@ function member(isKey: boolean, type?: FieldType | (() => FieldType))
 
 export { StorageFieldType as Types, FieldType as Type, Field as ModelField } from './common'
 
-export { Model as Cache } from './cache';
-export { Model as Sql } from './rdb';
-export { Model as NoSql } from './doc';
+export { File } from './providers/file'
+export { Vanilla } from './providers/vanilla'
+export * from './expressions/expression'

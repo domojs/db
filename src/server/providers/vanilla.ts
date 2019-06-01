@@ -17,8 +17,13 @@ import { Enumerable, ModelDefinition } from "../shared";
 import { isPromiseLike } from "@akala/core";
 import { BinaryOperator } from "../expressions/binary-operator";
 debugger;
-export class Vanilla extends PersistenceEngine
+export class Vanilla extends PersistenceEngine<any>
 {
+    store: any;
+    public async init(connection: any): Promise<void>
+    {
+        this.store = connection;
+    }
     public async load<T>(expression: StrictExpressions): Promise<T>
     {
         var executor = new ExpressionExecutor();

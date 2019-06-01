@@ -1,6 +1,6 @@
 import { Commands, CommandResult } from "./command";
 
-export abstract class CommandProcessor
+export abstract class CommandProcessor<TOptions = string>
 {
     public visitCommands(cmds: Commands<any>[])
     {
@@ -18,4 +18,7 @@ export abstract class CommandProcessor
     abstract visitUpdate<T>(cmd: Commands<T>): PromiseLike<CommandResult>;
     abstract visitDelete<T>(cmd: Commands<T>): PromiseLike<CommandResult>;
     abstract visitInsert<T>(cmd: Commands<T>): PromiseLike<CommandResult>;
+
+    abstract init(options: TOptions): void;
+
 }
