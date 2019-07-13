@@ -8,6 +8,9 @@ import { ParameterExpression } from "./expressions/parameter-expression";
 import { MemberExpression } from "./expressions/member-expression";
 import { NewExpression } from "./expressions/new-expression";
 import { BinaryExpression } from "./expressions/binary-expression";
+import * as akala from '@akala/core'
+
+export type asyncProxy<T> = { [P in keyof T]: PromiseLike<T[P]> };
 
 export class Query<T> implements AsyncIterable<T>
 {

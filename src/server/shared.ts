@@ -184,31 +184,31 @@ export function Model<TObject>(name: string | (new () => TObject), nameInStorage
     }
 }
 
-export function Field(type?: FieldType | (() => FieldType))
+export function Field(type?: FieldType | (() => FieldType), generator?: Generator)
 export function Field<T>(target: any, propertyKey: string, descriptor?: TypedPropertyDescriptor<T>)
-export function Field<T>(type?: FieldType | (() => FieldType), propertyKey?: string, descriptor?: TypedPropertyDescriptor<T>)
+export function Field<T>(type?: FieldType | (() => FieldType), propertyKey?: string | Generator, descriptor?: TypedPropertyDescriptor<T>)
 {
-    if (typeof propertyKey != 'undefined')
+    if (typeof propertyKey != 'undefined' && typeof propertyKey != 'number')
     {
         return Field()(type, propertyKey, descriptor);
     }
 
-    return member(false, type);
+    return member(false, type, propertyKey);
 }
 
-export function Key(type?: FieldType | (() => FieldType))
+export function Key(type?: FieldType | (() => FieldType), generator?: Generator)
 export function Key<T>(target: any, propertyKey: string, descriptor?: TypedPropertyDescriptor<T>)
-export function Key<T>(type?: FieldType | (() => FieldType), propertyKey?: string, descriptor?: TypedPropertyDescriptor<T>)
+export function Key<T>(type?: FieldType | (() => FieldType), propertyKey?: string | Generator, descriptor?: TypedPropertyDescriptor<T>)
 {
-    if (typeof propertyKey != 'undefined')
+    if (typeof propertyKey != 'undefined' && typeof propertyKey != 'number')
     {
         return Key()(type, propertyKey, descriptor);
     }
 
-    return member(true, type);
+    return member(true, type, propertyKey);
 }
 
-function member(isKey: boolean, type?: FieldType | (() => FieldType))
+function member(isKey: boolean, type?: FieldType | (() => FieldType), generator?: Generator)
 {
     return function <T>(target: any, propertyKey: Extract<keyof T, string>, descriptor?: TypedPropertyDescriptor<T>)
     {
@@ -219,9 +219,9 @@ function member(isKey: boolean, type?: FieldType | (() => FieldType))
 
         if (typeof type != 'undefined')
             if (typeof type == 'function')
-                model.defineMember(propertyKey, isKey, type());
+                model.defineMember(propertyKey, isKey, type(), generator);
             else
-                model.defineMember(propertyKey, isKey, type);
+                model.defineMember(propertyKey, isKey, type, generator);
         else 
         {
             var designType = Reflect.getMetadata('design:type', target, propertyKey);
@@ -234,7 +234,7 @@ function member(isKey: boolean, type?: FieldType | (() => FieldType))
 
             if (designType === String)
             {
-                model.defineMember(propertyKey, isKey, StorageFieldType.string());
+                model.defineMember(propertyKey, isKey, StorageFieldType.string(), generator);
                 let set = descriptor.set;
                 descriptor.set = function (value: T)
                 {
@@ -247,7 +247,7 @@ function member(isKey: boolean, type?: FieldType | (() => FieldType))
             }
             else if (designType === Number)
             {
-                model.defineMember(propertyKey, isKey, StorageFieldType.double());
+                model.defineMember(propertyKey, isKey, StorageFieldType.double(), generator);
                 let set = descriptor.set;
                 descriptor.set = function (value: T)
                 {
@@ -258,7 +258,7 @@ function member(isKey: boolean, type?: FieldType | (() => FieldType))
             }
             else if (designType === Date)
             {
-                model.defineMember(propertyKey, isKey, StorageFieldType.datetime());
+                model.defineMember(propertyKey, isKey, StorageFieldType.datetime(), generator);
                 let set = descriptor.set;
                 descriptor.set = function (value: T)
                 {
@@ -269,7 +269,7 @@ function member(isKey: boolean, type?: FieldType | (() => FieldType))
             }
             else if (designType === Boolean)
             {
-                model.defineMember(propertyKey, isKey, StorageFieldType.boolean());
+                model.defineMember(propertyKey, isKey, StorageFieldType.boolean(), generator);
 
                 let set = descriptor.set;
                 descriptor.set = function (value: T)

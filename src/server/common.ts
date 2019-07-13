@@ -47,7 +47,15 @@ export class StorageFieldType
 }
 
 export interface FieldType
-{ type: (...args: any) => FieldType, defaultValue?: any, allowNull?: boolean, length?: number, precision?: number, scale?: number }
+{
+    type: (...args: any) => FieldType,
+    defaultValue?: any,
+    allowNull?: boolean,
+    length?: number,
+    precision?: number,
+    scale?: number,
+}
+
 
 export enum Generator
 {
@@ -187,9 +195,9 @@ export class ModelDefinition<TObject extends { [key: string]: any }>
         return this.membersAsArray.filter((attr) => (attr.mode == ModelMode.Attribute || attr.mode == ModelMode.StorageField) && attr.isKey).map(attr => attr.nameInStorage);
     }
 
-    public defineMember<TKey extends Extract<keyof TObject, string>>(name: TKey, isKey: boolean, type: FieldType)
+    public defineMember<TKey extends Extract<keyof TObject, string>>(name: TKey, isKey: boolean, type: FieldType, generator: Generator = Generator.business)
     {
-        this.members[name] = Object.assign({ name, nameInStorage: name, isKey, mode: ModelMode.Attribute }, type) as any;
+        this.members[name] = Object.assign({ name, nameInStorage: name, isKey, mode: ModelMode.Attribute, generator }, type) as any;
         return this;
     }
 

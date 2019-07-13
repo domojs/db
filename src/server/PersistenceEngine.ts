@@ -48,6 +48,8 @@ export abstract class PersistenceEngine<TOptions = string>
 
     public dbSet<T = any>(name: string): DbSet<T>
     {
+        if (!ModelDefinition.definitions[name])
+            throw new Error('There is no model for name ' + name)
         return ModelDefinition.definitions[name].dbSet(this);
     }
 

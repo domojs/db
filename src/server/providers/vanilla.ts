@@ -16,7 +16,7 @@ import { Exception, NotSupportedException } from "../exceptions";
 import { Enumerable, ModelDefinition } from "../shared";
 import { isPromiseLike } from "@akala/core";
 import { BinaryOperator } from "../expressions/binary-operator";
-debugger;
+
 export class Vanilla extends PersistenceEngine<any>
 {
     store: any;

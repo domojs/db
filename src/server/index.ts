@@ -33,7 +33,7 @@ providers.register('vanilla', Vanilla)
 
 akala.injectWithName(['$isModule', '$master', '$worker'], function (isModule: akala.worker.IsModule, master: akala.worker.MasterRegistration, worker: EventEmitter)
 {
-    if (isModule('@akala-modules/db'))
+    if (isModule('@akala/storage'))
     {
         worker.on('ready', function ()
         {

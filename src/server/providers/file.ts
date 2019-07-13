@@ -8,6 +8,10 @@ import { CommandResult, Commands, Create } from "../commands/command";
 import { ModelDefinition } from "../shared";
 import { promisify } from "util";
 import { ConstantExpression } from "../expressions/constant-expression";
+import { Generator } from "../common";
+import { v4 as uuid } from 'uuid'
+import { NotSupportedException } from "../exceptions";
+
 
 export class File extends PersistenceEngine<FileOptions>
 {
@@ -48,7 +52,7 @@ export class File extends PersistenceEngine<FileOptions>
                 folder = await store[cte.value.namespace || 'db']
                 if (!folder)
                 {
-                    folder = new Proxy(new FolderEntry(folder[fspath], cte.value.namespace || 'db', null) as any, proxyHandler);
+                    folder = new Proxy(new FolderEntry(store[fspath], cte.value.namespace || 'db', null) as any, proxyHandler);
                     folder[isNew] = true;
                 }
                 if (folder[isFile])
@@ -115,8 +119,12 @@ class FileCommandProcessor extends CommandProcessor<FileOptions>
         {
             if (fileName)
                 fileName += this.engineOptions.multipleKeySeparator || '-'
+            if (model.members[key].generator == Generator.uuid || model.members[key].generator == Generator.native)
+                record[key] = uuid();
             fileName += await record[key];
         }
+        if (fileName == 'then')
+            throw new NotSupportedException('the file trying to be saved would result in a name as `then`. This conflicts with the promiselike understanding.');
         return fileName;
     }
 
@@ -135,7 +143,6 @@ class FileCommandProcessor extends CommandProcessor<FileOptions>
         if (!folder[fileName][isFile])
             return Promise.reject(new Error(`${folder[fileName][fspath]} is not a file`));
 
-
         return (folder[fileName] as FileSystemFile)[save](cmd.record).then(() =>
         {
             return { recordsAffected: 1 };
@@ -147,6 +154,8 @@ class FileCommandProcessor extends CommandProcessor<FileOptions>
         var folder = await this.store[cmd.model.namespace || 'db'];
         if (!folder || !folder[isDirectory])
             throw new Error(`the path ${join(this.store[fsName], cmd.model.namespace || 'db')} is not a folder`);
+        if (folder[isNew] && folder[isDirectory])
+            await folder
         folder = await folder[cmd.model.nameInStorage]
         if (!folder || !folder[isDirectory])
             throw new Error(`the path ${join(this.store[fsName], cmd.model.namespace || 'db', cmd.model.nameInStorage)} is not a folder`);
@@ -177,7 +186,7 @@ class FileCommandProcessor extends CommandProcessor<FileOptions>
             return Promise.reject(new Error(`the path ${join(this.store[fsName], cmd.model.namespace || 'db')} is not a folder`));
 
         if (!await folder[cmd.model.nameInStorage])
-            folder = await (folder[cmd.model.nameInStorage] = createFolder(folder[fspath], cmd.model.nameInStorage, cmd.model));
+            folder[cmd.model.nameInStorage] = createFolder(folder[fspath], cmd.model.nameInStorage, cmd.model);
         folder = await folder[cmd.model.nameInStorage]
         if (!folder || !folder[isDirectory])
             return Promise.reject(new Error(`the path ${join(this.store[fsName], cmd.model.namespace || 'db', cmd.model.nameInStorage)} is not a folder`));
@@ -226,7 +235,7 @@ interface FileSystemFile extends PromiseFileSystem
 {
     [isFile]: true;
     [isDirectory]?: false;
-    [fileContent]: Promise<any>;
+    [fileContent]: any;
     [save](content: any): Promise<void>;
     [load](): Promise<void>;
 }
@@ -369,16 +378,21 @@ class FileEntry implements FileSystemFile
     [isFile]: true = true;
     [isDirectory]?: false = false;
     [model]: ModelDefinition<any>;
-    get [fileContent]() { return readJson(this[fspath], this[model]); }
-    set [fileContent](value) { fileContents[this[fspath]]; fileContents[this[fspath]] }
+    get [fileContent]() { debugger; return fileContents[this[fspath]].lastContent; }
+    set [fileContent](value)
+    {
+        debugger;
+        if (fileContents[this[fspath]])
+            fileContents[this[fspath]].lastContent = value;
+    }
     async [save](modifiedContent: any): Promise<void>
     {
         await writeJson(this[fspath], JSON.stringify(modifiedContent), this[isNew], this[model]);
         this[isNew] = false;
     }
-    async [load](): Promise<void>
+    [load]()
     {
-        await readJson(this[fspath], this[model]);
+        return readJson(this[fspath], this[model]);
     }
     [fsName]: string;
     [fspath]: string;
@@ -398,10 +412,14 @@ var proxyHandler: ProxyHandler<FileSystemEntries> = {
         if (name === 'then')
             if (typeof target[name] == 'function')
                 return target[name].bind(target);
-            else
-                return Reflect.get(target, name, receiver)
+            else if (target[isFile])
+                return function (onfulfilled, onrejected)
+                {
+                    return target[load]().then(onfulfilled, onrejected);
+                }
+
         if (target[isFile] && typeof name == 'string')
-            return target[fileContent].then(v => v[name]);
+            return target[fileContent][name];
         return Reflect.get(target, name, receiver);
     },
     deleteProperty(target, name)
