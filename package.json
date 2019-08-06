@@ -16,8 +16,8 @@
     "license": "MIT",
     "types": "dist/server/index.d.ts",
     "dependencies": {
-        "@akala/core": "^2.0.91",
-        "@akala/server": "^3.0.7",
+        "@akala/core": "^2.0.93",
+        "@akala/server": "^3.0.9",
         "mongodb": "^3.3.0-beta2",
         "reflect-metadata": "^0.1.13",
         "sequelize": "^5.12.3",
