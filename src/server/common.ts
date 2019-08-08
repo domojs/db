@@ -229,7 +229,7 @@ export class ModelDefinition<TObject extends { [key: string]: any }>
         Object.keys(record).forEach((k =>
         {
             if (~(this.key as string[]).indexOf(k))
-                result[k] = record[k];
+                result[k as keyof TObject] = record[k];
         }))
         return result;
     }
@@ -240,7 +240,7 @@ export class ModelDefinition<TObject extends { [key: string]: any }>
         Object.keys(record).forEach((k =>
         {
             if (!~(this.key as string[]).indexOf(k))
-                result[k] = record[k];
+                result[k as keyof TObject] = record[k];
         }))
         return result;
     }
