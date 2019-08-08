@@ -24,21 +24,10 @@ export * from './string-builder'
 export * from './providers/file'
 export * from './providers/vanilla'
 
-import {providers} from './shared'
+import { providers } from './shared'
 import { File } from './providers/file';
 import { Vanilla } from './providers/vanilla';
 
 providers.register('file', File)
 providers.register('vanilla', Vanilla)
 
-akala.injectWithName(['$isModule', '$master', '$worker'], function (isModule: akala.worker.IsModule, master: akala.worker.MasterRegistration, worker: EventEmitter)
-{
-    if (isModule('@akala/storage'))
-    {
-        worker.on('ready', function ()
-        {
-            // Called when all modules have been initialized
-        });
-        master(__filename, './shared');
-    }
-})();
