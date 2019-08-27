@@ -14,7 +14,7 @@
   "peerDependencies": {},
   "dependencies": {
     "@akala/core": "^2.0.65",
-    "@akala/server": "^2.1.12",
+    "@akala/server": "^3.0.21",
     "ioredis": "^4.6.2",
     "ws": "^6.1.3"
   },
