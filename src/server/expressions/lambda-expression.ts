@@ -40,7 +40,7 @@ export type Parameter<T extends (...args: any[]) => any> = T extends () => any ?
 
 export class LambdaExpression extends TypedLambdaExpression<(...args: any[]) => any>
 {
-    static typed<T extends (...args: any[]) => any>(body: TypedExpression<T>, parameters: Parameter<T> & Expressions[]): any
+    static typed<T extends (...args: any[]) => U, U>(body: TypedExpression<U>, parameters: Parameter<T> & Expressions[]): TypedLambdaExpression<T>
     {
         return new TypedLambdaExpression<T>(body, parameters);
     }

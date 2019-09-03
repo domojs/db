@@ -117,16 +117,28 @@ export class Query<T> implements AsyncIterable<T>
     }
 
     public select<F extends keyof T>(field: F): ApplySymbolExpression<T, T[F]>
+    public select<U>(map: { [K in keyof U]: string }): ApplySymbolExpression<T, U>
     public select<U>(expression: TypedLambdaExpression<Project<T, U>>): ApplySymbolExpression<T, U>
-    public select<U>(fieldOrExpression: U | TypedLambdaExpression<Project<T, U>>)
+    public select<U>(fieldOrExpression: keyof T | { [K in keyof U]: string } | TypedLambdaExpression<Project<T, U>>)
     {
         if (typeof fieldOrExpression == 'string')
         {
-            var parameter = new ParameterExpression<T>(null)
-            return this.select(LambdaExpression.typed<Project<T, U>>(new MemberExpression(parameter, fieldOrExpression as any), [parameter]));
+            let parameter = new ParameterExpression<T>(null)
+            return this.select(LambdaExpression.typed<Project<T, U>, U>(new MemberExpression(parameter, fieldOrExpression as any), [parameter]));
         }
-        if (typeof fieldOrExpression == 'symbol' || typeof fieldOrExpression == 'number')
+        if (typeof fieldOrExpression == 'symbol' || typeof fieldOrExpression == 'number' || typeof fieldOrExpression == 'string')
             throw new Error('Invalid type of field');
+
+        if (!(fieldOrExpression instanceof TypedLambdaExpression))
+        {
+            let map = fieldOrExpression as { [K in keyof U]: string };
+            let parameter = new ParameterExpression<T>(null)
+            return this.select(LambdaExpression.typed<Project<T, U>, U>(new NewExpression<U>(...akala.map(map, (keySource, keyTarget) =>
+            {
+                var source = akala.Parser.parseBindable(keySource).reduce<TypedExpression<any>>((previous, current) => new MemberExpression<any, string, any>(previous, current as unknown as string), parameter);
+                return new MemberExpression<U, keyof U, U[keyof U]>(source, keyTarget)
+            }, true)), [parameter]));
+        }
         return new Query<U>(this.provider, new ApplySymbolExpression<T, U>(this.expression, QuerySymbols.select, fieldOrExpression as TypedLambdaExpression<Project<T, U>>));
     }
 
