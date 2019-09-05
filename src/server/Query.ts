@@ -99,18 +99,16 @@ export class Query<T> implements AsyncIterable<T>
         return new Query<T>(this.provider, new ApplySymbolExpression(this.expression, QuerySymbols.orderbyDesc, fieldOrExpression as TypedLambdaExpression<Project<T, X>>));
     }
 
-    public groupBy<F extends keyof T>(field: F): Query<T>
-    public groupBy<U>(expression: TypedLambdaExpression<Project<T, U>>): Query<T>
-    public groupBy<X>(fieldOrExpression: X | TypedLambdaExpression<Project<T, X>>): Query<T>
+    public groupBy<F extends keyof T>(field: F): Query<{ key: T, value: Query<T> }>
+    public groupBy<U>(expression: TypedLambdaExpression<Project<T, U>>): Query<{ key: any, value: Query<U> }>
+    public groupBy<X>(fieldOrExpression: (X extends keyof T ? X : never) | TypedLambdaExpression<Project<T, X>>)
     {
-        if (typeof fieldOrExpression == 'string')
+        if (typeof fieldOrExpression == 'string' || typeof fieldOrExpression == 'symbol' || typeof fieldOrExpression == 'number')
         {
             var parameter = new ParameterExpression<T>()
-            return this.groupBy(new TypedLambdaExpression<Project<T, X>>(new MemberExpression(parameter, fieldOrExpression as any as keyof T), [parameter]));
+            return this.groupBy(LambdaExpression.typed<Project<T, X>, X>(new MemberExpression(parameter, fieldOrExpression), [parameter]));
         }
-        if (typeof fieldOrExpression == 'symbol' || typeof fieldOrExpression == 'number')
-            throw new Error('Invalid type of field');
-        return new Query<T>(this.provider, new ApplySymbolExpression(this.expression, QuerySymbols.groupby, fieldOrExpression as TypedLambdaExpression<Project<T, X>>));
+        return new Query(this.provider, new ApplySymbolExpression(this.expression, QuerySymbols.groupby, fieldOrExpression as TypedLambdaExpression<Project<T, X>>));
     }
 
     public join<U, X>(other: Query<U>, fieldT: keyof T, fieldU: keyof U, selector: { first: keyof X, second: keyof X }): Query<X>
