@@ -42,6 +42,16 @@ export class Query<T> implements AsyncIterable<T>
         return result.value
     }
 
+    public async toArray()
+    {
+        var result = [];
+        for await (let item of this)
+        {
+            result.push(item);
+        }
+        return result;
+    }
+
     public where<F extends keyof T>(field: F, operator: BinaryOperator, value: T[F]): Query<T>
     public where(expression: string): Query<T>
     public where(expression: TypedLambdaExpression<Predicate<T>>): Query<T>
