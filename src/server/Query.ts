@@ -9,6 +9,7 @@ import { MemberExpression } from "./expressions/member-expression";
 import { NewExpression } from "./expressions/new-expression";
 import { BinaryExpression } from "./expressions/binary-expression";
 import * as akala from '@akala/core'
+import { Parser } from "./parser";
 
 export type asyncProxy<T> = { [P in keyof T]: PromiseLike<T[P]> };
 
@@ -42,13 +43,18 @@ export class Query<T> implements AsyncIterable<T>
     }
 
     public where<F extends keyof T>(field: F, operator: BinaryOperator, value: T[F]): Query<T>
+    public where(expression: string): Query<T>
     public where(expression: TypedLambdaExpression<Predicate<T>>): Query<T>
     public where<F extends keyof T>(fieldOrExpression: F | TypedLambdaExpression<Predicate<T>>, operator?: BinaryOperator, value?: T[F]): Query<T>
     {
         if (typeof fieldOrExpression == 'string')
         {
-            var parameter = new ParameterExpression<T>()
-            return this.where(new TypedLambdaExpression<Predicate<T>>(new BinaryExpression<StrictExpressions>(new MemberExpression(parameter, fieldOrExpression), operator, new ConstantExpression(value)), [parameter]));
+            var parameter = new ParameterExpression<T>();
+            var parser = new Parser(parameter);
+            var exp = parser.parse(fieldOrExpression);
+            if (typeof value != 'undefined')
+                return this.where(new TypedLambdaExpression<Predicate<T>>(new BinaryExpression<StrictExpressions>(exp, operator, new ConstantExpression(value)), [parameter]));
+            return this.where(new TypedLambdaExpression<Predicate<T>>(exp, [parameter]));
         }
         if (typeof fieldOrExpression == 'symbol' || typeof fieldOrExpression == 'number')
             throw new Error('Invalid type of field');
@@ -116,9 +122,9 @@ export class Query<T> implements AsyncIterable<T>
         return new Query<X>(this.provider, new ApplySymbolExpression(this.expression, QuerySymbols.join, joinCondition as TypedLambdaExpression<Project<T, X>>));
     }
 
-    public select<F extends keyof T>(field: F): ApplySymbolExpression<T, T[F]>
-    public select<U>(map: { [K in keyof U]: string }): ApplySymbolExpression<T, U>
-    public select<U>(expression: TypedLambdaExpression<Project<T, U>>): ApplySymbolExpression<T, U>
+    public select<F extends keyof T>(field: F): Query<T[F]>
+    public select<U>(map: { [K in keyof U]: string }): Query<U>
+    public select<U>(expression: TypedLambdaExpression<Project<T, U>>): Query<U>
     public select<U>(fieldOrExpression: keyof T | { [K in keyof U]: string } | TypedLambdaExpression<Project<T, U>>)
     {
         if (typeof fieldOrExpression == 'string')
@@ -133,10 +139,12 @@ export class Query<T> implements AsyncIterable<T>
         {
             let map = fieldOrExpression as { [K in keyof U]: string };
             let parameter = new ParameterExpression<T>(null)
+            var parser = new Parser(parameter);
             return this.select(LambdaExpression.typed<Project<T, U>, U>(new NewExpression<U>(...akala.map(map, (keySource, keyTarget) =>
             {
-                var source = akala.Parser.parseBindable(keySource).reduce<TypedExpression<any>>((previous, current) => new MemberExpression<any, string, any>(previous, current as unknown as string), parameter);
-                return new MemberExpression<U, keyof U, U[keyof U]>(source, keyTarget)
+                var source = parser.parse(keySource)
+                // var source = akala.Parser.parseBindable(keySource).reduce<TypedExpression<any>>((previous, current) => new MemberExpression<any, string, any>(previous, current as unknown as string), parameter);
+                return new MemberExpression<U, keyof U, U[keyof U]>(source as TypedExpression<any>, keyTarget)
             }, true)), [parameter]));
         }
         return new Query<U>(this.provider, new ApplySymbolExpression<T, U>(this.expression, QuerySymbols.select, fieldOrExpression as TypedLambdaExpression<Project<T, U>>));
@@ -179,3 +187,4 @@ export var QuerySymbols = {
     join: Symbol('join'),
     count: Symbol('count'),
 }
+
