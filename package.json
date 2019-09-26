@@ -16,17 +16,17 @@
     "license": "MIT",
     "types": "dist/server/index.d.ts",
     "dependencies": {
-        "@akala/core": "^2.0.96",
-        "@akala/server": "^3.0.12",
-        "mongodb": "^3.3.0-beta2",
+        "@akala/core": "^2.0.100",
+        "@akala/server": "^3.0.27",
+        "mongodb": "^3.3.2",
         "reflect-metadata": "^0.1.13",
-        "sequelize": "^5.12.3",
-        "uuid": "^3.3.2"
+        "sequelize": "^5.19.0",
+        "uuid": "^3.3.3"
     },
     "devDependencies": {
-        "@types/debug": "^4.1.2",
+        "@types/debug": "^4.1.5",
         "@types/mocha": "^5.2.6",
-        "@types/mongodb": "^3.1.32",
+        "@types/mongodb": "^3.3.3",
         "@types/sequelize": "^4.28.4",
         "@types/uuid": "^3.4.5",
         "mocha": "^6.2.0",
