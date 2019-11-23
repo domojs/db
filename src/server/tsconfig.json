@@ -1,9 +1,11 @@
 {
+    "extends":"..",
     "compileOnSave": true,
     "compilerOptions": {
-        "experimentalDecorators": true,
-        "declaration": true,
+        "rootDir": ".",
+        "target": "es6",
+        "module": "commonjs",
         "moduleResolution": "node",
-        "module": "commonjs"
+        "declaration": true
     }
 }

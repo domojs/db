@@ -1,12 +1,24 @@
 import * as akala from '@akala/server';
-var log = akala.log('domojs:db');
 
-akala.injectWithName(['$master', '$isModule'], function (master: akala.worker.MasterRegistration, isModule:akala.worker.IsModule)
-{
-    if (isModule('@domojs/db'))
-        master(module.filename, './master', './master');
-})();
+export * from './shared'
 
-import { DbClient } from './master';
-export * from './master'
-export var client: DbClient = akala.resolve<DbClient>('$db');
+export * from './commands/command-processor'
+export * from './commands/command'
+export * from './Query'
+export * from './exceptions'
+export * from './string-builder'
+export * from './providers/file'
+export * from './providers/vanilla'
+import * as expressions from './expressions'
+
+export { expressions }
+
+akala.module('@akala/storage');
+
+import { providers } from './shared'
+import { File } from './providers/file';
+import { Vanilla } from './providers/vanilla';
+
+providers.register('file', File)
+providers.register('vanilla', Vanilla)
+
