@@ -38,9 +38,9 @@
     ws "^6.0.0"
 
 "@akala/server@^3.0.27":
-  version "3.0.27"
-  resolved "https://registry.yarnpkg.com/@akala/server/-/server-3.0.27.tgz#e2c4757875cbc2a3e9988b94e53bed93fd13c1b7"
-  integrity sha512-aZ37F/oab65YZHCZqed+mxtsCOJ/D2XdRBa8FEXS/pnm8lU40/aAcMpKjZvI2QHpppoMVB5tNsmEcgsV93Wm7w==
+  version "3.0.28"
+  resolved "https://registry.yarnpkg.com/@akala/server/-/server-3.0.28.tgz#49e6e9173459252c27c4c3f8cfac9039b4aadd73"
+  integrity sha512-98nr4cgZuWgxLizpLPes9IgU3ao1EIxxnvno334VVOrhQjxGXDW5GmOf4Xv/k1ZKg+ghyltF1JnYnVkA8CrwwQ==
   dependencies:
     "@akala/commands" "^0.2.10"
     "@akala/core" "^2.0.100"
@@ -724,7 +724,7 @@ locate-path@^3.0.0:
     p-locate "^3.0.0"
     path-exists "^3.0.0"
 
-lodash@^4.17.11, lodash@^4.17.15:
+lodash@^4.17.15:
   version "4.17.15"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.15.tgz#b447f6670a0455bbfeedd11392eff330ea097548"
   integrity sha512-8xOcRHvCjnocdS5cpwXQXVzmmh5e5+saE2QGoeQmbKmRS6J3VQppPOIt0MnmE+4xlZoumy0GPG0D0MVIQbNA1A==
