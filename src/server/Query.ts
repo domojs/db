@@ -28,21 +28,22 @@ export class Query<T> implements AsyncIterable<T>
             yield r;
     }
 
-    public async firstOrDefault()
+    public async firstOrDefault(): Promise<T>
     {
         var result = await this[Symbol.asyncIterator]().next();
-        return result.value
+        return result.value as T;
     }
 
-    public async singleOrDefault()
+    public async singleOrDefault(): Promise<T>
     {
-        var result = await this[Symbol.asyncIterator]().next();
-        if (!result.done)
+        var iterator = this[Symbol.asyncIterator]();
+        var result = await iterator.next();
+        if (!result.done && !(await iterator.next()).done)
             throw new Error('More than one item was found');
-        return result.value
+        return result.value as T;
     }
 
-    public async toArray()
+    public async toArray(): Promise<T[]>
     {
         var result = [];
         for await (let item of this)
