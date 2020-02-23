@@ -16,13 +16,24 @@ import { Exception, NotSupportedException } from "../exceptions";
 import { Enumerable, ModelDefinition } from "../shared";
 import { isPromiseLike } from "@akala/core";
 import { BinaryOperator } from "../expressions/binary-operator";
+import { CommandProcessor } from "../commands/command-processor";
+import { Commands, CommandResult } from "../commands/command";
 
 export class Vanilla extends PersistenceEngine<any>
 {
-    store: any;
-    public async init(connection: any): Promise<void>
+    constructor()
     {
-        this.store = connection;
+        super(new VanillaCommandProcessor())
+    }
+    store: any;
+    public async init(options?: VanillaOptions): Promise<void>
+    {
+        if (!options)
+            options = {};
+        if (!options.store)
+            options.store = {};
+        this.store = options.store;
+        this.processor.init(options);
     }
     public async load<T>(expression: StrictExpressions): Promise<T>
     {
@@ -37,6 +48,46 @@ export class Vanilla extends PersistenceEngine<any>
         else
             return executor.result;
     }
+}
+
+interface VanillaStore
+{ [key: string]: any[] }
+
+export interface VanillaOptions
+{
+    store?: VanillaStore;
+}
+
+export class VanillaCommandProcessor extends CommandProcessor<VanillaOptions>
+{
+    private store: VanillaStore;
+    private engineOptions: VanillaOptions;
+
+    constructor()
+    {
+        super();
+    }
+
+    visitUpdate<T>(cmd: Commands<T>): PromiseLike<CommandResult>
+    {
+        throw new Error("Method not implemented.");
+    }
+
+    visitDelete<T>(cmd: Commands<T>): PromiseLike<CommandResult>
+    {
+        throw new Error("Method not implemented.");
+    }
+    visitInsert<T>(cmd: Commands<T>): PromiseLike<CommandResult>
+    {
+        throw new Error("Method not implemented.");
+    }
+    init(options: VanillaOptions): void
+    {
+        this.store = options.store;
+        this.engineOptions = options;
+    }
+
+
 }
 
 export class ExpressionExecutor extends ExpressionVisitor

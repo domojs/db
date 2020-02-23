@@ -155,10 +155,12 @@ export namespace Enumerable
     }
 }
 
-export function Model<TObject>(name: string | (new () => TObject), nameInStorage?: string, namespace?: string)
+export function Model<TObject>(name: (new () => TObject)): void
+export function Model<TObject>(name: string, nameInStorage?: string, namespace?: string): (ctor: new () => TObject) => void
+export function Model<TObject>(name: string | (new () => TObject), nameInStorage?: string, namespace?: string): void | ((ctor: new () => TObject) => void)
 {
     if (typeof name !== 'string')
-        return Model(name.name)(name);
+        return Model<TObject>(name.name)(name);
     var name_s = name;
     return function <TObject>(cl: (new () => TObject))
     {

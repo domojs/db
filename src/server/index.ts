@@ -19,6 +19,6 @@ import { providers } from './shared'
 import { File } from './providers/file';
 import { Vanilla } from './providers/vanilla';
 
-providers.register('file', File)
-providers.register('vanilla', Vanilla)
+providers.registerFactory('file', () => new File())
+providers.registerFactory('vanilla', () => new Vanilla())
 
